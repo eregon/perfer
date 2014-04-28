@@ -37,7 +37,7 @@ module Perfer
         (sessions * jobs * measurements).group(mattrs, :measurements)
       }
 
-      results.map { |result|
+      results.to_a([:file, :run_time]).map { |result|
         metadata = result.to_hash
         measurements = metadata.delete(:measurements).to_a
         measurements.each { |m| m.delete :measurement_nb }

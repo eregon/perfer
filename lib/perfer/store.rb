@@ -12,8 +12,12 @@ module Perfer
     def self.db
       @db ||= begin
         require 'sequel'
-        Sequel.sqlite(Perfer::DIR/'perfer.db')
+        Sequel.sqlite((Perfer::DIR/'perfer.db').path)
       end
+    end
+
+    def db
+      Store.db
     end
 
     def load

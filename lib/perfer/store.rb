@@ -13,6 +13,7 @@ module Perfer
       @db ||= begin
         require 'sequel'
         db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
+        #db = Sequel.postgres('perfer')
         # Fix Alf bug https://github.com/alf-tool/alf-core/issues/7
         Sequel.datetime_class = DateTime
         setup_db(db)
@@ -39,7 +40,6 @@ module Perfer
         metadata = result.to_hash
         measurements = metadata.delete(:measurements).to_a
         measurements.each { |m| m.delete :measurement_nb }
-        metadata[:run_time] = metadata[:run_time].to_time
         Result.new(metadata, measurements)
       }
     end

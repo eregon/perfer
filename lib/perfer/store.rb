@@ -25,8 +25,7 @@ module Perfer
       Store.db
     end
 
-    def load
-      return YAMLStore.new(@file).load if ENV['PERFER_LOAD_FROM_YAML']
+    def load_with_alf
       require 'alf'
       file = @file
       mattrs = [:measurement_nb, :real, :utime, :stime]
@@ -42,6 +41,26 @@ module Perfer
         measurements = metadata.delete(:measurements).to_a
         measurements.each { |m| m.delete :measurement_nb }
         Result.new(metadata, measurements)
+      }
+    end
+
+    def load
+      return YAMLStore.new(@file).load if ENV['PERFER_LOAD_FROM_YAML']
+
+      m_key = lambda { |m| m.values_at(:file, :run_time, :job) }
+
+      measurements = db[:measurements].where(file: @file).to_a.group_by(&m_key)
+      measurements.each_value do |ms|
+        ms.map! { |m|
+          { real: m[:real], utime: m[:utime], stime: m[:stime] }
+        }
+      end
+
+      db[:sessions].where(file: @file)
+                   .natural_join(db[:jobs])
+                   .order(:file, :run_time).map { |metadata|
+        data = measurements[m_key.call(metadata)]
+        Result.new(metadata, data)
       }
     end
 

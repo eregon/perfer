@@ -45,16 +45,16 @@ module Perfer
     end
 
     def add(results)
-      return if results.empty?
-
-      m = results.first.metadata.dup
-      # remove job-related attributes
-      m.delete(:job)
-      m.delete(:iterations)
-
-      db[:sessions].insert(m)
-
       results.each do |r|
+        unless db[:sessions].first(file: @file, run_time: r[:run_time])
+          m = r.metadata.dup
+          # remove job-related attributes
+          m.delete(:job)
+          m.delete(:iterations)
+
+          db[:sessions].insert(m)
+        end
+
         db[:jobs].insert(file: @file, run_time: r[:run_time],
                          job: r[:job], iterations: r[:iterations])
         r.each.with_index(1) do |m, i|
@@ -76,9 +76,7 @@ module Perfer
 
     def save(results)
       delete
-      results.group_by { |r| r[:run_time] }.each_pair do |_,run|
-        add(run)
-      end
+      add(results)
     end
 
     def rewrite

@@ -63,7 +63,10 @@ module Perfer
         r.each.with_index(1) do |m, i|
           db[:measurements].insert(
             file: @file, run_time: r[:run_time], job: r[:job],
-            measurement_nb: i, real: m[:real] || 0.0, utime: m[:utime] || 0.0, stime: m[:stime] || 0.0)
+            measurement_nb: i,
+            real:  m[:real]  || 0.0,
+            utime: m[:utime] || 0.0,
+            stime: m[:stime] || 0.0)
         end
       end
     end

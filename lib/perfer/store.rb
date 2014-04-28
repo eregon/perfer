@@ -26,6 +26,7 @@ module Perfer
     end
 
     def load
+      return YAMLStore.new(@file).load if ENV['PERFER_LOAD_FROM_YAML']
       require 'alf'
       file = @file
       mattrs = [:measurement_nb, :real, :utime, :stime]
@@ -56,10 +57,10 @@ module Perfer
         end
 
         db[:jobs].insert(file: @file, run_time: r[:run_time],
-                         job: r[:job], iterations: r[:iterations])
+                         job: r[:job].to_s, iterations: r[:iterations])
         r.each.with_index(1) do |m, i|
           db[:measurements].insert(
-            file: @file, run_time: r[:run_time], job: r[:job],
+            file: @file, run_time: r[:run_time], job: r[:job].to_s,
             measurement_nb: i,
             real:  m[:real]  || 0.0,
             utime: m[:utime] || 0.0,
@@ -124,5 +125,46 @@ module Perfer
       end
     end
     private_class_method :setup_db
+  end
+
+  class YAMLStore
+    def initialize(bench_file)
+      @file = YAMLStore.path_for_bench_file(bench_file)
+    end
+
+    def self.results_dir
+      DIR/'results'
+    end
+
+    def self.path_for_bench_file(bench_file)
+      path = results_dir
+      path.mkpath unless path.exist?
+
+      bench_file = Path(bench_file)
+      return bench_file if bench_file.inside?(results_dir)
+
+      # get the relative path to root, and relocate in @path
+      names = bench_file.each_filename.to_a
+      # prepend drive letter on Windows
+      names.unshift bench_file.path[0..0].upcase if File.dirname('C:') == 'C:.'
+
+      path.join(*names).add_ext('.yml')
+    end
+
+    def yaml_load_documents
+      docs = @file.open { |f| YAML.load_stream(f) }
+      docs = docs.documents unless Array === docs
+      docs
+    end
+
+    def load
+      return [] unless @file.exist?
+      yaml_load_documents.map { |doc|
+        metadata = doc[:metadata]
+        metadata.delete(:command_line) # not supported at the moment
+        metadata.delete(:verbose) # legacy
+        Result === doc ? doc : Result.new(metadata, doc[:data])
+      }
+    end
   end
 end

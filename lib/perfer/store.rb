@@ -13,6 +13,8 @@ module Perfer
       @db ||= begin
         require 'sequel'
         db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
+        # Fix Alf bug https://github.com/alf-tool/alf-core/issues/7
+        Sequel.datetime_class = DateTime
         setup_db(db)
         db
       end
@@ -23,20 +25,26 @@ module Perfer
     end
 
     def load
-      # file = @file
-      # mattrs = @db[:measurements].columns
-      # results = Alf.query(@db) {
-      #   sessions = sessions().to_relvar.where(file: file)
-      #   jobs = jobs().to_relvar
-      #   measurements = measurements().to_relvar
-      #   (sessions * jobs * measurements).group(mattrs, :measurements, allbut: true)
-      # }
-      # results.map { |result|
-      #   p result
-      #   measurements = result.delete(:measurements).to_a
-      #   measurements.each { |m| m.delete :measurement_nb }
-      #   Result.new(result, measurements)
-      # }
+      session = db[:sessions].first(file: @file)
+      return unless session
+
+      require 'alf'
+      file = @file
+      mattrs = [:measurement_nb, :real, :utime, :stime]
+      results = Alf.query(db) {
+        sessions = sessions().to_relvar.restrict(file: file)
+        jobs = jobs().to_relvar
+        measurements = measurements().to_relvar
+        (sessions * jobs * measurements).group(mattrs, :measurements)
+      }
+
+      results.map { |result|
+        metadata = result.to_hash
+        measurements = metadata.delete(:measurements).to_a
+        measurements.each { |m| m.delete :measurement_nb }
+        metadata[:run_time] = metadata[:run_time].to_time
+        Result.new(result, measurements)
+      }
     end
 
     def add(results)
@@ -55,7 +63,7 @@ module Perfer
         r.each.with_index(1) do |m, i|
           db[:measurements].insert(
             file: @file, run_time: r[:run_time], job: r[:job],
-            measurement_nb: i, realtime: m[:real], utime: m[:utime], stime: m[:stime])
+            measurement_nb: i, real: m[:real] || 0.0, utime: m[:utime] || 0.0, stime: m[:stime] || 0.0)
         end
       end
     end
@@ -106,7 +114,7 @@ module Perfer
         Time :run_time
         String :job
         Integer :measurement_nb
-        Float :realtime
+        Float :real
         Float :utime
         Float :stime
         primary_key [:file, :run_time, :job, :measurement_nb]

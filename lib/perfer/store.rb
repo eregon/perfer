@@ -160,10 +160,11 @@ module Perfer
     def load
       return [] unless @file.exist?
       yaml_load_documents.map { |doc|
+        doc = doc.to_hash if Result === doc
         metadata = doc[:metadata]
         metadata.delete(:command_line) # not supported at the moment
         metadata.delete(:verbose) # legacy
-        Result === doc ? doc : Result.new(metadata, doc[:data])
+        Result.new(metadata, doc[:data])
       }
     end
   end

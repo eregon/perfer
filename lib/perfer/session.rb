@@ -70,9 +70,7 @@ module Perfer
 
       block.call DSL.new(self)
 
-      @results_to_save.each { |result|
-        @store.append(result)
-      }
+      @store.add(@results_to_save)
       if Perfer.configuration.verbose
         puts
         ResultsFormatter.new(@results_to_save).report

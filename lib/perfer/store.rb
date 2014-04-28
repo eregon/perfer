@@ -6,26 +6,18 @@ module Perfer
     end
 
     def self.for_session(session)
-      new session
+      new session.file
     end
 
     def self.db
-      require 'sequel'
-      @db ||= Sequel.sqlite(Perfer::DIR/'perfer.db')
+      @db ||= begin
+        require 'sequel'
+        Sequel.sqlite(Perfer::DIR/'perfer.db')
+      end
     end
 
     def load
       setup_db
-      # db[:sessions].natural_join(:jobs)
-      #              .natural_join(:measurements)
-      #              .where(file: @file)
-      #              .to_a
-      #              .group_by { |t| [t[:file], t[:run_time], t[:job]] }
-      #              .map { |key, h|
-      #   Result.new()
-      # }
-      #   Result.new(metadata, measurements)
-      # }
 
       # file = @file
       # mattrs = @db[:measurements].columns
@@ -43,9 +35,25 @@ module Perfer
       # }
     end
 
-    def append(result)
-      @file.dir.mkpath unless @file.dir.exist?
-      @file.append YAML.dump(result.to_hash)
+    def add(results)
+      return if results.empty?
+
+      m = results.first.metadata.dup
+      # remove job-related attributes
+      m.delete(:job)
+      m.delete(:iterations)
+
+      db[:sessions].insert(m)
+
+      results.each do |r|
+        m[:jobs].insert(file: @file, run_time: r[:run_time],
+                        job: r[:job], iterations: r[:iterations])
+        r.each.with_index(1) do |m, i|
+          m[:measurements].insert(
+            file: @file, run_time: r[:run_time], job: r[:job],
+            measurement_nb: i, realtime: m[:real], utime: m[:utime], stime: m[:stime])
+        end
+      end
     end
 
     def save(results)

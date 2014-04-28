@@ -87,7 +87,7 @@ module Perfer
           String :ruby
           String :git_branch
           String :git_commit
-          String :bench_checksum
+          String :bench_file_checksum
           primary_key [:file, :run_time]
         end
 

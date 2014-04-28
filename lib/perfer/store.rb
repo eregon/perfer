@@ -12,7 +12,9 @@ module Perfer
     def self.db
       @db ||= begin
         require 'sequel'
-        Sequel.sqlite((Perfer::DIR/'perfer.db').path)
+        db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
+        setup_db(db)
+        db
       end
     end
 
@@ -21,8 +23,6 @@ module Perfer
     end
 
     def load
-      setup_db
-
       # file = @file
       # mattrs = @db[:measurements].columns
       # results = Alf.query(@db) {
@@ -50,10 +50,10 @@ module Perfer
       db[:sessions].insert(m)
 
       results.each do |r|
-        m[:jobs].insert(file: @file, run_time: r[:run_time],
+        db[:jobs].insert(file: @file, run_time: r[:run_time],
                         job: r[:job], iterations: r[:iterations])
         r.each.with_index(1) do |m, i|
-          m[:measurements].insert(
+          db[:measurements].insert(
             file: @file, run_time: r[:run_time], job: r[:job],
             measurement_nb: i, realtime: m[:real], utime: m[:utime], stime: m[:stime])
         end
@@ -73,8 +73,7 @@ module Perfer
       save load
     end
 
-  private
-    def setup_db
+    def self.setup_db(db)
       tables = [:sessions, :jobs, :measurements]
       return if (db.tables & tables) == tables
       # create the sessions table
@@ -114,5 +113,6 @@ module Perfer
         foreign_key [:file, :run_time, :job], :jobs
       end
     end
+    private_class_method :setup_db
   end
 end

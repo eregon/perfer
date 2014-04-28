@@ -51,7 +51,7 @@ module Perfer
 
       results.each do |r|
         db[:jobs].insert(file: @file, run_time: r[:run_time],
-                        job: r[:job], iterations: r[:iterations])
+                         job: r[:job], iterations: r[:iterations])
         r.each.with_index(1) do |m, i|
           db[:measurements].insert(
             file: @file, run_time: r[:run_time], job: r[:job],

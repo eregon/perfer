@@ -2,51 +2,44 @@ module Perfer
   class Store
     attr_reader :file
     def initialize(file)
-      @file = Path(file)
-    end
-
-    def self.results_dir
-      DIR/'results'
-    end
-
-    def self.all_results_paths
-      results_dir.glob('**/*.yml')
-    end
-
-    def self.path_for_bench_file(bench_file)
-      path = results_dir
-      path.mkpath unless path.exist?
-
-      bench_file = Path(bench_file)
-      return bench_file if bench_file.inside?(results_dir)
-
-      # get the relative path to root, and relocate in @path
-      names = bench_file.each_filename.to_a
-      # prepend drive letter on Windows
-      names.unshift bench_file.path[0..0].upcase if File.dirname('C:') == 'C:.'
-
-      path.join(*names).add_ext('.yml')
+      @file = Path(file).to_s
     end
 
     def self.for_session(session)
-      new path_for_bench_file(session.file)
+      new session
     end
 
-    def delete
-      @file.unlink
-    end
-
-    def yaml_load_documents
-      docs = @file.open { |f| YAML.load_stream(f) }
-      docs = docs.documents unless Array === docs
-      docs
+    def self.db
+      @db ||= todo
     end
 
     def load
-      return unless @file.exist?
-      yaml_load_documents.map! { |doc|
-        Result === doc ? doc : Result.new(doc[:metadata], doc[:data])
-      }
+      setup_db
+      # db[:sessions].natural_join(:jobs)
+      #              .natural_join(:measurements)
+      #              .where(file: @file)
+      #              .to_a
+      #              .group_by { |t| [t[:file], t[:run_time], t[:job]] }
+      #              .map { |key, h|
+      #   Result.new()
+      # }
+      #   Result.new(metadata, measurements)
+      # }
+
+      # file = @file
+      # mattrs = @db[:measurements].columns
+      # results = Alf.query(@db) {
+      #   sessions = sessions().to_relvar.where(file: file)
+      #   jobs = jobs().to_relvar
+      #   measurements = measurements().to_relvar
+      #   (sessions * jobs * measurements).group(mattrs, :measurements, allbut: true)
+      # }
+      # results.map { |result|
+      #   p result
+      #   measurements = result.delete(:measurements).to_a
+      #   measurements.each { |m| m.delete :measurement_nb }
+      #   Result.new(result, measurements)
+      # }
     end
 
     def append(result)
@@ -65,6 +58,12 @@ module Perfer
 
     def rewrite
       save load
+    end
+
+  private
+    def setup_db
+      require 'sequel'
+      # TODO
     end
   end
 end

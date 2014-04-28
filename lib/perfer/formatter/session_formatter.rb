@@ -7,7 +7,7 @@ module Perfer
     end
 
     def report(options = {})
-      return puts "No results available." unless @session.results
+      return puts "No results available." if @session.results.empty?
       session_name = @session.results.last[:session]
       puts session_name
       last_bench_file_checksum = @session.results.first[:bench_file_checksum]

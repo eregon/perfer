@@ -87,10 +87,8 @@ EOS
         raise NotImplementedError # TODO
         each_session { |session| puts session.store.file }
       when "delete", "rm"
-        raise NotImplementedError # TODO
         each_session { |session| session.store.delete }
       when "rewrite"
-        raise NotImplementedError # TODO
         each_session { |session| session.store.rewrite }
       else
         unknown_subcommand subcommand

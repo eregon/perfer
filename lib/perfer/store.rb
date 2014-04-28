@@ -25,9 +25,6 @@ module Perfer
     end
 
     def load
-      session = db[:sessions].first(file: @file)
-      return unless session
-
       require 'alf'
       file = @file
       mattrs = [:measurement_nb, :real, :utime, :stime]
@@ -43,7 +40,7 @@ module Perfer
         measurements = metadata.delete(:measurements).to_a
         measurements.each { |m| m.delete :measurement_nb }
         metadata[:run_time] = metadata[:run_time].to_time
-        Result.new(result, measurements)
+        Result.new(metadata, measurements)
       }
     end
 
@@ -71,13 +68,17 @@ module Perfer
       end
     end
 
+    def delete
+      db[:measurements].where(file: @file).delete
+      db[:jobs].where(file: @file).delete
+      db[:sessions].where(file: @file).delete
+    end
+
     def save(results)
-      @file.dir.mkpath unless @file.dir.exist?
-      # ensure results are still ordered by :run_time
-      unless results.each_cons(2) { |a,b| a[:run_time] <= b[:run_time] }
-        results.sort_by! { |r| r[:run_time] }
+      delete
+      results.group_by { |r| r[:run_time] }.each_pair do |_,run|
+        add(run)
       end
-      @file.write YAML.dump_stream(*results.map(&:to_hash))
     end
 
     def rewrite

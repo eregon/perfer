@@ -78,41 +78,41 @@ module Perfer
       tables = [:sessions, :jobs, :measurements]
       return if (db.tables & tables) == tables
       # create the sessions table
-        db.create_table :sessions do
-          String :file
-          Time :run_time
-          String :session
-          Float :minimal_time
-          Integer :measurements
-          String :ruby
-          String :git_branch
-          String :git_commit
-          String :bench_file_checksum
-          primary_key [:file, :run_time]
-        end
+      db.create_table :sessions do
+        String :file
+        Time :run_time
+        String :session
+        Float :minimal_time
+        Integer :measurements
+        String :ruby
+        String :git_branch
+        String :git_commit
+        String :bench_file_checksum
+        primary_key [:file, :run_time]
+      end
 
-        # create the jobs table
-        db.create_table :jobs do
-          String :file
-          Time :run_time
-          String :job
-          Integer :iterations
-          primary_key [:file, :run_time, :job]
-          foreign_key [:file, :run_time], :sessions
-        end
+      # create the jobs table
+      db.create_table :jobs do
+        String :file
+        Time :run_time
+        String :job
+        Integer :iterations
+        primary_key [:file, :run_time, :job]
+        foreign_key [:file, :run_time], :sessions
+      end
 
-        # create the measurements table
-        db.create_table :measurements do
-          String :file
-          Time :run_time
-          String :job
-          Integer :measurement_nb
-          Float :realtime
-          Float :utime
-          Float :stime
-          primary_key [:file, :run_time, :job, :measurement_nb]
-          foreign_key [:file, :run_time, :job], :jobs
-        end
+      # create the measurements table
+      db.create_table :measurements do
+        String :file
+        Time :run_time
+        String :job
+        Integer :measurement_nb
+        Float :realtime
+        Float :utime
+        Float :stime
+        primary_key [:file, :run_time, :job, :measurement_nb]
+        foreign_key [:file, :run_time, :job], :jobs
+      end
     end
   end
 end

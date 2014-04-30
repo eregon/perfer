@@ -26,7 +26,7 @@ module Perfer
     end
 
     def load_with_alf
-      require 'alf'
+      require 'alf-sequel'
       file = @file
       mattrs = [:measurement_nb, :real, :utime, :stime]
       results = Alf.query(db) {

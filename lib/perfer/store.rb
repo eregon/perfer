@@ -220,6 +220,7 @@ module Perfer
         metadata.delete(:command_line) # not supported at the moment
         metadata.delete(:verbose) # legacy
         metadata[:measurements] ||= doc[:data].size
+        metadata[:minimal_time] ||= 1.0
         Result.new(metadata, doc[:data])
       }
     end

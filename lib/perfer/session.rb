@@ -87,6 +87,8 @@ module Perfer
       case type
       when 'barplot'
         HighchartsGrapher.new.barplot(self)
+      when 'time'
+        HighchartsGrapher.new.timelines(self)
       when 'boxplot'
         load_results
         # consider only first job for now

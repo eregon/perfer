@@ -2,6 +2,7 @@ module Perfer
   class HighchartsGrapher
     def initialize
       require 'json'
+      require 'erb'
     end
 
     def barplot(session)
@@ -36,8 +37,35 @@ module Perfer
       unit = Formatter::TIME_UNITS[min_scale]
       categories.map! { |ruby| Formatter.short_ruby_description(ruby) }
 
-      require 'erb'
       puts ERB.new((Path.dir/'highcharts'/'barplot.html.erb').read).result(binding)
+    end
+
+    def timelines(session)
+      db = session.store.db
+      file = session.file.to_s
+
+      # must restrict to one job!
+      job = db[:jobs].where(:file => file).order(:job).get(:job) # TODO
+
+      times_per_ruby = db[:mean_time_per_iter_jobs]
+                     .where(:file => file, :job => job)
+                     .natural_join(:sessions)
+                     .order(:ruby, :run_time)
+                     .to_hash_groups(:ruby, [:run_time, :s_per_iter])
+
+      min_scale = times_per_ruby.inject(0) { |min, (_, times)|
+        [min, times.map { |_,t| Formatter.float_scale(t) }.min].min
+      }
+      in_units = 10 ** (-min_scale)
+
+      series = times_per_ruby.map { |ruby,times|
+        d = times.map { |run_time,t| [run_time.strftime('%Q').to_i, (t * in_units).round(1)] }
+        { name: Formatter.short_ruby_description(ruby), data: d }
+      }
+      title = session.name
+      unit = Formatter::TIME_UNITS[min_scale]
+
+      puts ERB.new((Path.dir/'highcharts'/'timelines.html.erb').read).result(binding)
     end
   end
 end

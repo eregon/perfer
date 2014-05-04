@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title><%= title %></title>
+
+    <script type="text/javascript" src="./Highcharts-4.0.1/jquery.min.js"></script>
+    <script type="text/javascript" src="./Highcharts-4.0.1/js/highcharts.js"></script>
+    <script type="text/javascript" src="./Highcharts-4.0.1/js/modules/exporting.js"></script>
+
+    <script type="text/javascript">
+$(function () {
+  $('#container').highcharts({
+    chart: {
+      type: 'spline'
+    },
+    title: {
+      text: 'The evolution of ' + <%= title.to_json %> + ' across Ruby implementations'
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        week: '%e %b'
+      },
+      title: {
+        text: 'Date'
+      }
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: 'Time / iteration (<%= unit %>)'
+      }
+    },
+    tooltip: {
+      headerFormat: '<b>{series.name}</b><br>',
+      pointFormat: '{point.x:%e %b}: {point.y} <%= unit %>'
+    },
+    series: <%= series.to_json %>
+  });
+});
+    </script>
+  </head>
+  <body>
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  </body>
+</html>

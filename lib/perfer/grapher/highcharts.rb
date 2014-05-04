@@ -60,10 +60,13 @@ module Perfer
 
       # must restrict the other dimension to one possibility
       # TODO: ability to choose which one
+      title = session.name
       if per == :ruby
         condition[:job] = db[:jobs].where(condition).order(:job).get(:job)
+        title += "##{condition[:job]} across Ruby implementations"
       else
         condition[:ruby] = db[:sessions].where(condition).order(:ruby).get(:ruby)
+        title += " on #{Formatter.short_ruby_description(condition[:ruby])}"
       end
 
       times_per_x = db[:mean_time_per_iter_jobs]
@@ -79,12 +82,6 @@ module Perfer
         name = (per == :ruby) ? Formatter.short_ruby_description(key) : key
         { name: name, data: times }
       }
-
-      title = if per == :ruby
-        "#{session.name}##{condition[:job]} across Ruby implementations"
-      else
-        "#{session.name} on #{Formatter.short_ruby_description(condition[:ruby])}"
-      end
 
       puts render_template('timelines', binding)
     end

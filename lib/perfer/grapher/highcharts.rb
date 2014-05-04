@@ -72,7 +72,7 @@ module Perfer
         times.map! { |run_time,t| [run_time.strftime('%Q').to_i, (t * in_units).round(1)] }
         { name: Formatter.short_ruby_description(ruby), data: times }
       }
-      title = session.name
+      title = "#{session.name}##{job}"
 
       puts render_template('timelines', binding)
     end

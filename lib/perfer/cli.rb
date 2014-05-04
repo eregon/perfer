@@ -96,8 +96,13 @@ EOS
     end
 
     def graph
+      types = %w[barplot boxplot]
+      type = @argv.shift
+      unless types.include? type
+        error "Unknown graph type: #{type}. Must be one of #{types*', '}."
+      end
       each_session { |session|
-        session.graph
+        session.graph(type)
       }
     end
 

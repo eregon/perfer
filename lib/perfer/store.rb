@@ -14,6 +14,10 @@ module Perfer
         require 'sequel'
         #db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
         db = Sequel.postgres('perfer')
+        if $DEBUG
+          require 'logger'
+          db.loggers << Logger.new($stderr)
+        end
         # Fix Alf bug https://github.com/alf-tool/alf-core/issues/7
         Sequel.datetime_class = DateTime
         setup_db(db)

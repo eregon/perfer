@@ -156,6 +156,19 @@ module Perfer
                        .natural_join(:jobs)
                        .select_group(:file, :run_time, :job)
                        .select_more { (avg(:real) / :iterations).as(:s_per_iter) }
+
+
+      # Light constraints, could be delayed constraints but it is hard to support
+      db.create_view :constraint_no_empty_session,
+                     db[:sessions].select(:file, :run_time)
+                       .except(db[:sessions].natural_join(:jobs).select(:file, :run_time))
+      db.create_view :constraint_no_empty_job,
+                     db[:jobs].select(:file, :run_time, :job)
+                       .except(db[:jobs].natural_join(:measurements).select(:file, :run_time, :job))
+      db.create_view :constraint_nb_measurements,
+                     db[:measurements].group_and_count(:file, :run_time, :job)
+                       .except(db[:sessions].natural_join(:jobs)
+                                            .select(:file, :run_time, :job, :measurements___count))
     end
     private_class_method :setup_db
   end
@@ -197,6 +210,7 @@ module Perfer
         metadata = doc[:metadata]
         metadata.delete(:command_line) # not supported at the moment
         metadata.delete(:verbose) # legacy
+        metadata[:measurements] ||= doc[:data].size
         Result.new(metadata, doc[:data])
       }
     end

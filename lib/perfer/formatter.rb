@@ -79,9 +79,11 @@ module Perfer
         "#{$1} r#{$2}"
       when /^rubinius .+? \((\d\.\d\.\d) /
         $1
-      when /^jruby .+? \(ruby-(\d\.\d\.\d)-p(\d+)\)/,
-           /^jruby .+? \((\d\.\d\.\d)p(\d+)\)/
+      when /^jruby \S+? \(ruby-(\d\.\d\.\d)-p(\d+)\)/,
+           /^jruby \S+? \((\d\.\d\.\d)p(\d+)\)/
         "#{$1}p#{$2}"
+      when /^jruby \S+? \((\d\.\d\.\d\.dev)\)/
+        $1
       when /^MacRuby .+? \(ruby (\d\.\d\.\d)\)/
         $1
       else

@@ -19,6 +19,7 @@ describe Perfer::Formatter do
       'jruby 1.7.0.dev (ruby-1.8.7-p330) (2011-08-24 7b9f999) (OpenJDK 64-Bit Server VM 1.6.0_22) [linux-amd64-java]' => 'jruby 1.7.0.dev 7b9f999 (1.8.7p330)',
       'jruby 1.7.0.preview2 (1.9.3p203) 2012-08-07 fffffff on Java HotSpot(TM) 64-Bit Server VM 1.6.0_33-b03-424-10M3720 [darwin-x86_64]' => 'jruby 1.7.0.preview2 2012-08-07 (1.9.3p203)',
       'jruby 1.7.0.preview2 (1.9.3p203) 2012-08-07 ea329bd on Java HotSpot(TM) 64-Bit Server VM 1.6.0_33-b03-424-10M3720 [darwin-x86_64]' => 'jruby 1.7.0.preview2 ea329bd (1.9.3p203)',
+      'jruby 9000.dev (2.1.0.dev) 2014-03-15 7e924c0 on Java HotSpot(TM) 64-Bit Server VM 1.7.0_40-b43 [darwin-x86_64]' => 'jruby 9000.dev 7e924c0 (2.1.0.dev)',
       'MacRuby 0.9 (ruby 1.9.2) [universal-darwin10.0, x86_64]' => 'macruby 0.9 (1.9.2)',
     }.each_pair { |description, short|
       Perfer::Formatter.short_ruby_description(description).should == short

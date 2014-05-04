@@ -53,26 +53,38 @@ module Perfer
       puts render_template('barplot', binding)
     end
 
-    def timelines(session)
+    def timelines(session, per = :ruby) # per is :ruby or :job
       db = session.store.db
       file = session.file.to_s
+      condition = { :file => file }
 
-      # must restrict to one job!
-      job = db[:jobs].where(:file => file).order(:job).get(:job) # TODO
+      # must restrict the other dimension to one possibility
+      # TODO: ability to choose which one
+      if per == :ruby
+        condition[:job] = db[:jobs].where(condition).order(:job).get(:job)
+      else
+        condition[:ruby] = db[:sessions].where(condition).order(:ruby).get(:ruby)
+      end
 
-      times_per_ruby = db[:mean_time_per_iter_jobs]
-                     .where(:file => file, :job => job)
-                     .natural_join(:sessions)
-                     .order(:ruby, :run_time)
-                     .to_hash_groups(:ruby, [:run_time, :s_per_iter])
+      times_per_x = db[:mean_time_per_iter_jobs]
+                  .where(condition)
+                  .natural_join(:sessions)
+                  .order(per, :run_time)
+                  .to_hash_groups(per, [:run_time, :s_per_iter])
 
-      unit, in_units = compute_unit(times_per_ruby)
+      unit, in_units = compute_unit(times_per_x)
 
-      series = times_per_ruby.map { |ruby,times|
+      series = times_per_x.map { |key,times|
         times.map! { |run_time,t| [run_time.strftime('%Q').to_i, (t * in_units).round(1)] }
-        { name: Formatter.short_ruby_description(ruby), data: times }
+        name = (per == :ruby) ? Formatter.short_ruby_description(key) : key
+        { name: name, data: times }
       }
-      title = "#{session.name}##{job}"
+
+      title = if per == :ruby
+        "#{session.name}##{condition[:job]} across Ruby implementations"
+      else
+        "#{session.name} on #{Formatter.short_ruby_description(condition[:ruby])}"
+      end
 
       puts render_template('timelines', binding)
     end

@@ -96,7 +96,7 @@ EOS
     end
 
     def graph
-      types = %w[barplot boxplot time]
+      types = %w[barplot boxplot timeR timeJ]
       type = @argv.shift
       unless types.include? type
         error "Unknown graph type: #{type}. Must be one of #{types*', '}."

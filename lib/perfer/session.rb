@@ -87,8 +87,8 @@ module Perfer
       case type
       when 'barplot'
         HighchartsGrapher.new.barplot(self)
-      when 'time'
-        HighchartsGrapher.new.timelines(self)
+      when 'timeR', 'timeJ'
+        HighchartsGrapher.new.timelines(self, (type == 'timeJ' ? :job : :ruby))
       when 'boxplot'
         load_results
         # consider only first job for now

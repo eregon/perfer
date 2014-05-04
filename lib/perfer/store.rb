@@ -221,6 +221,7 @@ module Perfer
         metadata.delete(:verbose) # legacy
         metadata[:measurements] ||= doc[:data].size
         metadata[:minimal_time] ||= 1.0
+        metadata[:bench_file_checksum] ||= '0'*40
         Result.new(metadata, doc[:data])
       }
     end

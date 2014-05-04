@@ -6,11 +6,11 @@ module Perfer
 
     def barplot(session)
       db = session.store.db
-      file = session.file
+      file = session.file.to_s
 
       times_per_job = db[:last_sessions_per_ruby]
                     .natural_join(:mean_time_per_iter_jobs)
-                    .where(:file => file.to_s)
+                    .where(:file => file)
                     .order(:job, :ruby)
                     .to_hash_groups(:job, [:ruby, :s_per_iter])
 

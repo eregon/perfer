@@ -110,12 +110,12 @@ module Perfer
       db.create_table :sessions do
         String :file; check { file > '' }
         Time :run_time
-        String :session
-        Float :minimal_time
-        Integer :measurements
-        String :ruby
-        String :git_branch
-        String :git_commit
+        String :session; check { session > '' }
+        Float :minimal_time; check { minimal_time > 0.0 }
+        Integer :measurements; check { measurements >= 2 }
+        String :ruby; check { ruby > '' }
+        String :git_branch; check { git_branch > '' }
+        String :git_commit; check { git_commit > '' }
         String :bench_file_checksum
         primary_key [:file, :run_time]
       end
@@ -124,8 +124,8 @@ module Perfer
       db.create_table :jobs do
         String :file
         Time :run_time
-        String :job
-        Integer :iterations
+        String :job; check { job > '' }
+        Integer :iterations; check { iterations > 0 }
         primary_key [:file, :run_time, :job]
         foreign_key [:file, :run_time], :sessions
       end
@@ -135,10 +135,10 @@ module Perfer
         String :file
         Time :run_time
         String :job
-        Integer :measurement_nb
-        Float :real
-        Float :utime
-        Float :stime
+        Integer :measurement_nb; check { measurement_nb >= 0 }
+        Float :real; check { real >= 0.0 }
+        Float :utime; check { utime >= 0.0 }
+        Float :stime; check { stime >= 0.0 }
         primary_key [:file, :run_time, :job, :measurement_nb]
         foreign_key [:file, :run_time, :job], :jobs
       end

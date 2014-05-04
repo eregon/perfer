@@ -143,15 +143,17 @@ module Perfer
         foreign_key [:file, :run_time, :job], :jobs
       end
 
-      last_sessions_per_ruby = db[:sessions].select_group(:file, :ruby)
-                                            .select_more { max(:run_time).as(:run_time) }
-      last_sessions_per_ruby = last_sessions_per_ruby.natural_join(:sessions)
-      db.create_view :last_sessions_per_ruby, last_sessions_per_ruby
+      db.create_view :last_sessions_per_ruby,
+                     db[:sessions]
+                       .select_group(:file, :ruby)
+                       .select_more { max(:run_time).as(:run_time) }
+                       .natural_join(:sessions)
 
-      mean_time_per_iter_jobs = db[:measurements].natural_join(:jobs)
-                                                 .select_group(:file, :run_time, :job)
-                                                 .select_more { (avg(:real) / :iterations).as(:s_per_iter) }
-      db.create_view :mean_time_per_iter_jobs, mean_time_per_iter_jobs
+      db.create_view :mean_time_per_iter_jobs,
+                     db[:measurements]
+                       .natural_join(:jobs)
+                       .select_group(:file, :run_time, :job)
+                       .select_more { (avg(:real) / :iterations).as(:s_per_iter) }
     end
     private_class_method :setup_db
   end

@@ -84,6 +84,8 @@ module Perfer
     end
 
     def graph
+      return HighchartsGrapher.new.barplot(self)
+
       load_results
       # consider only first job for now
       last_runtime = @results.last[:runtime]

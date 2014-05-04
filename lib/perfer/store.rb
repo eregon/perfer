@@ -12,8 +12,8 @@ module Perfer
     def self.db
       @db ||= begin
         require 'sequel'
-        db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
-        #db = Sequel.postgres('perfer')
+        #db = Sequel.sqlite((Perfer::DIR/'perfer.db').path)
+        db = Sequel.postgres('perfer')
         # Fix Alf bug https://github.com/alf-tool/alf-core/issues/7
         Sequel.datetime_class = DateTime
         setup_db(db)
@@ -108,7 +108,7 @@ module Perfer
       return if (db.tables & tables) == tables
       # create the sessions table
       db.create_table :sessions do
-        String :file
+        String :file; check { file > '' }
         Time :run_time
         String :session
         Float :minimal_time
@@ -143,6 +143,15 @@ module Perfer
         foreign_key [:file, :run_time, :job], :jobs
       end
 
+      # Not a single NULL value allowed
+      tables.each do |table|
+        db.alter_table(table) do
+          db[table].columns.each do |column|
+            set_column_not_null column
+          end
+        end
+      end
+
       db.create_view :last_sessions_per_ruby_base,
                      db[:sessions]
                        .select_group(:file, :ruby)
@@ -154,8 +163,8 @@ module Perfer
       db.create_view :mean_time_per_iter_jobs,
                      db[:measurements]
                        .natural_join(:jobs)
-                       .select_group(:file, :run_time, :job)
-                       .select_more { (avg(:real) / :iterations).as(:s_per_iter) }
+                       .group(:file, :run_time, :job, :iterations)
+                       .select { [:file, :run_time, :job, (avg(:real) / :iterations).as(:s_per_iter)] }
 
 
       # Light constraints, could be delayed constraints but it is hard to support

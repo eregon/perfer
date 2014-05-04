@@ -77,9 +77,9 @@ module Perfer
 
       unit, in_units = compute_unit(times_per_x)
 
-      series = times_per_x.map { |key,times|
+      series = times_per_x.map { |x,times|
         times.map! { |run_time,t| [run_time.strftime('%Q').to_i, (t * in_units).round(1)] }
-        name = (per == :ruby) ? Formatter.short_ruby_description(key) : key
+        name = (per == :ruby) ? Formatter.short_ruby_description(x) : x
         { name: name, data: times }
       }
 

@@ -162,13 +162,11 @@ module Perfer
           end
         end
 
-        db.create_view :last_sessions_per_ruby_base,
-                       db[:sessions]
-                         .select_group(:file, :ruby)
-                         .select_more { max(:run_time).as(:run_time) }
-
         db.create_view :last_sessions_per_ruby,
-                       db[:last_sessions_per_ruby_base].natural_join(:sessions)
+                       (db[:sessions]
+                         .select_group(:file, :ruby)
+                         .select_more { max(:run_time).as(:run_time) }).from_self
+                       .natural_join(:sessions)
 
         db.create_view :mean_time_per_iter_jobs,
                        db[:measurements]

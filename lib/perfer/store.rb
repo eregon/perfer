@@ -142,8 +142,8 @@ module Perfer
           Integer :measurements; check { measurements >= 2 }
           String :ruby; check { ruby > '' }
           String :git_branch; check { git_branch > '' }
-          String :git_commit; check { git_commit > '' }
-          String :bench_file_checksum
+          String :git_commit, fixed: true, size: 40; check { git_commit > '' }
+          String :bench_file_checksum, fixed: true, size: 40
           primary_key [:file, :run_time]
         end
 

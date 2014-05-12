@@ -90,9 +90,26 @@ module Perfer
               utime: m[:utime] || 0.0,
               stime: m[:stime] || 0.0)
           end
+
+          check_constraints
         end
       end
     end
+
+    def check_constraints
+      [
+        :constraint_no_empty_session,
+        :constraint_no_empty_job,
+        :constraint_nb_measurements
+      ].each do |constraint|
+        unless db[constraint].empty?
+          $stderr.puts "Constraint #{constraint} violated! Doing a rollback."
+          $stderr.puts db[constraint].all
+          raise Sequel::Rollback
+        end
+      end
+    end
+    private :check_constraints
 
     def delete
       db.transaction do

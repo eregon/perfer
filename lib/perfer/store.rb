@@ -194,11 +194,11 @@ module Perfer
 
         # Light constraints, could be delayed constraints but it is hard to support
         db.create_view :constraint_no_empty_session,
-                       db[:sessions].select(:file, :run_time)
-                         .except(db[:sessions].natural_join(:jobs).select(:file, :run_time))
+                       db[:sessions].select(:file, :run_time).except(
+                       db[:jobs]    .select(:file, :run_time))
         db.create_view :constraint_no_empty_job,
-                       db[:jobs].select(:file, :run_time, :job)
-                         .except(db[:jobs].natural_join(:measurements).select(:file, :run_time, :job))
+                       db[:jobs]        .select(:file, :run_time, :job).except(
+                       db[:measurements].select(:file, :run_time, :job))
         db.create_view :constraint_nb_measurements,
                        db[:measurements].group_and_count(:file, :run_time, :job)
                          .except(db[:sessions].natural_join(:jobs)
